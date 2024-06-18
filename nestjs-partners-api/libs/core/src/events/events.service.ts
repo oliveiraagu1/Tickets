@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { PrismaService } from 'libs/core/src/prisma/prisma.service';
 import { ReserveSpotDto } from './dto/reserve-spot.dto';
 import { Prisma, SpotStatus, TicketStatus } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class EventsService {
@@ -11,7 +11,10 @@ export class EventsService {
 
   create(createEventDto: CreateEventDto) {
     return this.prismaService.event.create({
-      data: createEventDto,
+      data: {
+        ...createEventDto,
+        date: new Date(createEventDto.date),
+      },
     });
   }
 
@@ -21,26 +24,23 @@ export class EventsService {
 
   findOne(id: string) {
     return this.prismaService.event.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
     });
   }
 
   update(id: string, updateEventDto: UpdateEventDto) {
     return this.prismaService.event.update({
-      where: {
-        id,
+      data: {
+        ...updateEventDto,
+        date: new Date(updateEventDto.date),
       },
-      data: updateEventDto,
+      where: { id },
     });
   }
 
   remove(id: string) {
     return this.prismaService.event.delete({
-      where: {
-        id,
-      },
+      where: { id },
     });
   }
 
@@ -53,13 +53,11 @@ export class EventsService {
         },
       },
     });
-
     if (spots.length !== dto.spots.length) {
       const foundSpotsName = spots.map((spot) => spot.name);
       const notFoundSpotsName = dto.spots.filter(
         (spotName) => !foundSpotsName.includes(spotName),
       );
-
       throw new Error(`Spots ${notFoundSpotsName.join(', ')} not found`);
     }
 
@@ -103,15 +101,15 @@ export class EventsService {
         { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
       );
       return tickets;
-    } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        switch (err.code) {
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        switch (e.code) {
           case 'P2002': // unique constraint violation
           case 'P2034': // transaction conflict
             throw new Error('Some spots are already reserved');
         }
       }
-      throw err;
+      throw e;
     }
   }
 }

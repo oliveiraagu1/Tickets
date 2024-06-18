@@ -21,25 +21,19 @@ model Event {
   price       Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  spot Spot[]
-
-  @@map("events")
+  Spot        Spot[]
 }
 
 model Spot {
-  id        String     @id @default(uuid())
-  name      String
-  status    SpotStatus
-  eventId   String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  event              Event                @relation(fields: [eventId], references: [id])
-  ticket             Ticket?
-  reservationHistory ReservationHistory[]
-
-  @@map("spots")
+  id                 String               @id @default(uuid())
+  name               String
+  status             SpotStatus
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  eventId            String
+  Event              Event                @relation(fields: [eventId], references: [id])
+  Ticket             Ticket?
+  ReservationHistory ReservationHistory[]
 }
 
 enum SpotStatus {
@@ -51,14 +45,12 @@ model Ticket {
   id         String     @id @default(uuid())
   email      String
   ticketKind TicketKind
-  spotId     String
   createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-
-  spot Spot @relation(fields: [spotId], references: [id])
+  updatedAt  DateTime   @default(now())
+  spotId     String
+  Spot       Spot       @relation(fields: [spotId], references: [id])
 
   @@unique([spotId])
-  @@map("tickets")
 }
 
 model ReservationHistory {
@@ -66,13 +58,10 @@ model ReservationHistory {
   email      String
   ticketKind TicketKind
   status     TicketStatus
-  spotId     String
   createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-
-  spot Spot @relation(fields: [spotId], references: [id])
-
-  @@map("reservation_history")
+  updatedAt  DateTime     @default(now())
+  spotId     String
+  Spot       Spot         @relation(fields: [spotId], references: [id])
 }
 
 enum TicketKind {

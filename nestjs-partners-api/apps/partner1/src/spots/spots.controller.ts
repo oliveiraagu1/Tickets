@@ -39,8 +39,8 @@ export class SpotsController {
   @Patch(':spotId')
   update(
     @Param('id') spotId: string,
-    @Body() updateSpotRequest: UpdateSpotRequest,
     @Param('eventId') eventId: string,
+    @Body() updateSpotRequest: UpdateSpotRequest,
   ) {
     return this.spotsService.update(eventId, spotId, updateSpotRequest);
   }
